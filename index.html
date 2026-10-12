@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#020617"><meta name="description" content="Genera textos para redes sociales con IA.">
+<link rel="manifest" href="/manifest.webmanifest"><title>Generador Relámpago AI</title>
+<style>
+:root{color-scheme:dark;--bg:#020617;--panel:#0f172a;--line:#263244;--muted:#94a3b8;--amber:#f59e0b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f8fafc;font:16px system-ui,sans-serif}
+header,footer{padding:18px;text-align:center;border-bottom:1px solid #1e293b}footer{border-top:1px solid #1e293b;border-bottom:0;color:var(--muted);font-size:12px}
+h1{margin:0;color:#fbbf24;font-size:22px}header p{color:var(--muted);font-size:13px;margin:6px 0 0}
+main{width:min(100% - 28px,560px);margin:24px auto;display:grid;gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+label{display:block;font-size:13px;color:#cbd5e1;margin:0 0 7px}input,select,textarea{width:100%;border:1px solid var(--line);background:#020617;color:white;border-radius:11px;padding:12px;font:inherit}
+textarea{min-height:180px;resize:vertical}.field{margin-bottom:14px}button{border:0;border-radius:11px;padding:12px 15px;font-weight:750;cursor:pointer}
+.primary{background:linear-gradient(90deg,#f59e0b,#f97316);color:#111827;width:100%}.secondary{background:#1e293b;color:#fbbf24}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.muted{color:var(--muted);font-size:13px}.status{min-height:20px;color:#fbbf24;font-size:13px}.pill{border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:12px;color:#cbd5e1}
+button:disabled{opacity:.55;cursor:wait}
+</style></head><body>
+<header><h1>⚡ Generador Relámpago AI</h1><p>Copy para tus redes sociales, en segundos</p></header>
+<main>
+<div class="panel row"><span class="muted">Generador de contenido</span><span class="pill">Beta</span></div>
+<form id="form" class="panel">
+<div class="field"><label for="topic">¿De qué trata tu publicación?</label><input id="topic" required maxlength="500" placeholder="Ej.: zapatos deportivos sostenibles"></div>
+<div class="field"><label for="platform">Plataforma</label><select id="platform"><option>Instagram</option><option>TikTok</option><option>LinkedIn</option></select></div>
+<div class="field"><label for="tone">Tono</label><select id="tone"><option>Ventas</option><option>Divertido</option><option>Urgente</option><option>Educativo</option><option>Profesional</option></select></div>
+<div class="field"><label for="goal">Objetivo</label><select id="goal"><option>Conseguir ventas</option><option>Generar comentarios</option><option>Aumentar seguidores</option><option>Explicar un producto</option></select></div>
+<button class="primary" id="generate" type="submit">🚀 Generar copy</button><p id="status" class="status" role="status"></p>
+</form>
+<section class="panel"><div class="row" style="margin-bottom:10px"><strong>Tu resultado</strong><button id="copy" class="secondary" type="button">Copiar</button></div>
+<textarea id="result" placeholder="Aquí aparecerá tu texto…" aria-label="Texto generado"></textarea></section>
+<section class="panel"><strong>Generador Relámpago Pro</strong><p class="muted">La suscripción se añadirá después de validar la generación y los costes de IA. Todavía no se aceptan pagos.</p></section>
+</main><footer>Generador Relámpago AI · Beta</footer>
+<script>
+const form=document.querySelector("#form"),statusEl=document.querySelector("#status"),result=document.querySelector("#result"),generate=document.querySelector("#generate");
+form.addEventListener("submit",async e=>{
+ e.preventDefault();const topic=document.querySelector("#topic").value.trim();if(!topic)return;
+ generate.disabled=true;statusEl.textContent="Generando con IA…";
+ try{const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({topic,platform:document.querySelector("#platform").value,tone:document.querySelector("#tone").value,goal:document.querySelector("#goal").value})});
+ const data=await response.json();if(!response.ok)throw new Error(data.error||"No se pudo generar el texto.");result.value=data.text;statusEl.textContent="Texto generado. Revísalo antes de publicarlo.";
+ }catch(err){statusEl.textContent=err.message==="Failed to fetch"?"No se pudo conectar con el servidor. Revisa el despliegue y la configuración de IA.":err.message;}
+ finally{generate.disabled=false;}
+});
+document.querySelector("#copy").addEventListener("click",async()=>{if(!result.value)return;try{await navigator.clipboard.writeText(result.value);statusEl.textContent="Texto copiado."}catch{result.select();statusEl.textContent="Selecciona y copia el texto manualmente."}});
+if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+</script></body></html>
